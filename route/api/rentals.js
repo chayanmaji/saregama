@@ -1,6 +1,6 @@
 const mongoose = require('mongoose');
 const express = require('express');
-const { rentalSchema, Rental, validateRental } = require('../models/rentals'); 
+const { rentalSchema, Rental, validateRental } = require('../models/rentals');
 const { Customer } = require('../models/customer');
 const { Movie } = require('../models/movies');
 const { Genre } = require('../models/genres');

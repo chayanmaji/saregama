@@ -1,6 +1,7 @@
 const mongoose = require('mongoose');
 const express = require('express');
 const Joi = require('joi');
+const { validateId } = require('../util/validator');
 const { Customer , validateCustomer} = require('../models/customer');
 const router = express.Router();
 
@@ -13,6 +14,7 @@ router.get('/', async (req, res) => {
 
 router.get('/:id', async (req , res) => {
     if (!req.params.id) return res.status(400).send('Please send customer id as req param');
+    if (!validateId(req.params.id)) return res.status(400).send('Please send valid customer id as req param');
     const customer = await Customer.findById(req.params.id);
     if (!customer) return res.status(404).send('The customer with the given id was not found.');
     res.send(customer);
@@ -29,6 +31,7 @@ router.post('/', async (req, res) => {
 
 router.put('/:id', async (req, res) => {
     if (!req.params.id) return res.status(400).send('Please send customer id as req param');
+    if (!validateId(req.params.id)) return res.status(400).send('Please send valid customer id as req param');
     const { error } = validateCustomer(req.body);
     if (error) return res.status(400).send(error.details[0].message);
 

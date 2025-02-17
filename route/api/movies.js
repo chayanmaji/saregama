@@ -2,6 +2,7 @@ const mongoose = require('mongoose');
 const express = require('express');
 const Joi = require('joi');
 const { Movie, validateMovie } = require('../models/movies');
+const { validateId } = require('../util/validator');
 const { Genre } = require('../models/genres');
 const router = express.Router();
 
@@ -12,7 +13,7 @@ router.get('/', async (req, res) => {
 
 router.get('/:id', async (req, res) => {
     if (!req.params.id) return res.status(400).send('Please send movie id as request param');
-
+    if (!validateId(req.params.id)) return res.status(400).send('Please send valid movie id as req param');
     const movie = await Movie.findById(req.params.id);
     if (!movie) return res.status(400).send('The movie with the given id was not found.');
 
@@ -42,6 +43,7 @@ router.post('/', async (req, res) => {
 
 router.put('/:id', async(req, res) => {
     if (!req.params.id) return res.status(400).send('Please send movie id as req param');
+    if (!validateId(req.params.id)) return res.status(400).send('Please send valid movie id as req param');
     const { error } = validateMovie(req.body);
     if (error) return res.status(400).send(error.details[0].message);
 
@@ -63,6 +65,7 @@ router.put('/:id', async(req, res) => {
 
 router.delete('/:id', async(req, res) => {
     if(!req.params.id) return res.status(400).send('Please send movie Id as request param');
+    if (!validateId(req.params.id)) return res.status(400).send('Please send valid movie id as req param');
     const movie = await Movie.findByIdAndDelete(req.params.id);
     if(!movie) return res.status(400).send('The movie with the given id was not found.');
     res.send(movie);
