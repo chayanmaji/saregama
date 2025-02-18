@@ -3,16 +3,17 @@ const express = require('express');
 const Joi = require('joi');
 const auth = require('../../middleware/auth');
 const admin = require('../../middleware/admin');
+const asyncMiddleware = require('../../middleware/async');
 const { Genre, validateGenre } = require('../models/genres');
 const { validateId } = require('../util/validator');
 const router = express.Router();
   
-  router.get('/', async (req, res) => {
+  router.get('/', asyncMiddleware(async (req, res, next) => {
     const genres = await Genre.find();
-    res.send(genres);
-  });
+    res.send(genres); 
+  }));
   
-  router.post('/', auth, async (req, res) => {
+  router.post('/', auth, asyncMiddleware( async (req, res) => {
     const { error } = validateGenre(req.body); 
     if (error) return res.status(400).send(error.details[0].message);
 
@@ -20,9 +21,9 @@ const router = express.Router();
   
     genre = await genre.save();
     res.send(genre);
-  });
+  }));
   
-  router.put('/:id', auth ,async (req, res) => {
+  router.put('/:id', auth , asyncMiddleware(async (req, res) => {
     if (!req.params.id) return res.status(400).send('Please send genre id as req param');
     if (!validateId(req.params.id)) return res.status(400).send('Please send valid genre id as req param');
     const { error } = validateGenre(req.body); 
@@ -34,24 +35,24 @@ const router = express.Router();
     await genre.save();
 
     res.send(genre);
-  });
+  }));
   
-  router.delete('/:id', [auth, admin], async (req, res) => {
+  router.delete('/:id', [auth, admin], asyncMiddleware(async (req, res) => {
     if (!req.params.id) return res.status(400).send('Please send genre id as req param');
     if (!validateId(req.params.id)) return res.status(400).send('Please send valid genre id as req param');
     const genre = await Genre.findByIdAndDelete(req.params.id);
     if (!genre) return res.status(404).send('The genre with the given ID was not found.');
   
     res.send(genre);
-  });
+  }));
   
-  router.get('/:id', async (req, res) => {
+  router.get('/:id', asyncMiddleware(async (req, res) => {
     if (!req.params.id) return res.status(400).send('Please send genre id as req param');
     if (!validateId(req.params.id)) return res.status(400).send('Please send valid genre id as req param');
     const genre = await Genre.findById(req.params.id);
     if (!genre) return res.status(404).send('The genre with the given ID was not found.');
     res.send(genre);
-  });
+  }));
   
 
 

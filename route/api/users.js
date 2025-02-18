@@ -6,21 +6,22 @@ const Joi = require('joi');
 const { validateId } = require('../util/validator');
 const auth = require('../../middleware/auth');
 const { User, validateUser, validateUserUpdateRequest } = require('../models/users');
+const asyncMiddleware = require('../../middleware/async');
 
 const router = express.Router();
 const selectQuery = 'firstName lastName phone email';
 
-router.get('/me', auth, async (req, res)=>{
+router.get('/me', auth, asyncMiddleware(async (req, res)=>{
     const user = await User.findById(req.user._id).select('-password');
     res.send(user);
-})
+}));
 
-router.get('/', async (req, res) => {
+router.get('/', asyncMiddleware(async (req, res) => {
     const users = await User.find().select(selectQuery);
     res.send(users);
-});
+}));
 
-router.post('/', async (req, res) => {
+router.post('/', asyncMiddleware(async (req, res) => {
     const { error } = validateUser(req.body);
     if (error) return res.status(400).send(error.details[0].message);
 
@@ -41,9 +42,9 @@ router.post('/', async (req, res) => {
     const { password: _, ...createdUser } = user._doc;
     const token = user.generateAuthToken();
     res.header('x-auth-token',token).send(createdUser);
-});
+}));
 
-router.put('/:id', async (req, res) => {
+router.put('/:id', asyncMiddleware(async (req, res) => {
     if (!req.params.id) return res.status(400).send('Please send user id as req param');
     if (!validateId(req.params.id)) return res.status(400).send('Please send valid user id as req param');
     const { error } = validateUserUpdateRequest(req.body);
@@ -59,9 +60,9 @@ router.put('/:id', async (req, res) => {
     await user.save();
 
     res.send(user);
-});
+}));
 
-router.get('/:id', async (req, res) => {
+router.get('/:id', asyncMiddleware(async (req, res) => {
     if (!req.params.id) return res.status(400).send('Please send user id as req param');
     if (!validateId(req.params.id)) return res.status(400).send('Please send valid user id as req param');
 
@@ -69,16 +70,16 @@ router.get('/:id', async (req, res) => {
     if(!user) return res.status(404).send('The user with the give id was not found.');
 
     res.send(user);
-})
+}));
 
-router.delete('/:id', async(req, res) => {
+router.delete('/:id', asyncMiddleware(async(req, res) => {
     if (!req.params.id) return res.status(400).send('Please send user id as req param');
     if (!validateId(req.params.id)) return res.status(400).send('Please send valid user id as req param');
 
     const user = await User.findByIdAndDelete(req.params.id);
     if(!user) return res.status(404).send('The user with the give id was not found.');
     res.status(204).send(user);
-});
+}));
 
 
 module.exports = router;
