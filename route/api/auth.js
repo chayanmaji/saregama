@@ -4,11 +4,12 @@ const mongoose = require('mongoose');
 const express = require('express');
 const bcrypt = require('bcrypt');
 const Joi = require('joi');
+const asyncMiddleware = require('../../middleware/async');
 const { User } = require('../models/users');
 const jwtPayload = require('../util/jwt-payload');
 const router = express.Router();
 
-router.post('/', async (req, res) => {
+router.post('/', asyncMiddleware(async (req, res) => {
     const { error } = validateLoginRequest(req.body);
     if (error) return res.status(400).send(error.details[0].message);
 
@@ -22,7 +23,7 @@ router.post('/', async (req, res) => {
     const token = user.generateAuthToken();
 
     res.send(token);
-});
+}));
 
 const validateLoginRequest = (user) => {
     const schema = Joi.object({
